@@ -75,7 +75,7 @@ function App() {
   const [error, setError] = useState<string | null>(null);
   const [initialized, setInitialized] = useState(false);
   const [fundingBreakdown, setFundingBreakdown] = useState<{ stockValue: number; deepITMCallValue: number; totalValue: number; description: string } | null>(null);
-  const [hedgeAnalysis, setHedgeAnalysis] = useState<{ fundingSize: number; qqqPrice: number; hedgeRatio: number; currentHedgeCount: number; coverageRatio: number; status: string; recommendation: string; estimatedCost: number } | null>(null);
+  const [hedgeAnalysis, setHedgeAnalysis] = useState<{ fundingSize: number; qqqPrice: number; hedgeRatio: number; currentHedgeCount: number; coverageRatio: number; status: string; recommendation: string; formula: string; estimatedCost: number } | null>(null);
   const [calculationDetails, setCalculationDetails] = useState<{ stockPositions: any[]; deepITMCalls: any[]; qqqPrice: number; deepITMThreshold: number } | null>(null);
 
   // Default account number
@@ -394,8 +394,13 @@ function App() {
                     <span className="text-gray-600">Recommended:</span>
                     <span className="font-semibold text-gray-900">{hedgeAnalysis?.hedgeRatio || 0} contracts</span>
                   </div>
+                  {hedgeAnalysis && hedgeAnalysis.formula && (
+                    <p className="text-xs text-gray-600 mt-2 font-mono bg-gray-50 p-2 rounded">
+                      Formula: {hedgeAnalysis.formula}
+                    </p>
+                  )}
                   {hedgeAnalysis && hedgeAnalysis.recommendation && (
-                    <p className="text-xs text-gray-600 mt-2">
+                    <p className="text-xs text-gray-600 mt-2 font-semibold">
                       {hedgeAnalysis.recommendation}
                     </p>
                   )}

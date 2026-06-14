@@ -93,17 +93,21 @@ app.get('/api/accounts/:accountNumber/details', async (req, res) => {
         const coverageRatio = currentHedgeCount / hedgeCount;
         let hedgeStatus = 'adequatelyhedged';
         let recommendation = '';
+        let formula = '';
         if (coverageRatio < 0.8) {
             hedgeStatus = 'underhedged';
             recommendation = `Buy ${Math.ceil(hedgeCount - currentHedgeCount)} more QQQ PUT options`;
+            formula = `Funding Size ($${(stockValue + deepITMCallValue).toFixed(2)}) / (QQQ Price ($${qqqPrice.toFixed(2)}) × 100) = ${hedgeCount.toFixed(1)} contracts required`;
         }
         else if (coverageRatio > 1.2) {
             hedgeStatus = 'overhedged';
             recommendation = `Sell ${Math.ceil(currentHedgeCount - hedgeCount)} QQQ PUT options to adjust`;
+            formula = `Funding Size ($${(stockValue + deepITMCallValue).toFixed(2)}) / (QQQ Price ($${qqqPrice.toFixed(2)}) × 100) = ${hedgeCount.toFixed(1)} contracts required`;
         }
         else {
             hedgeStatus = 'adequatelyhedged';
             recommendation = 'Current hedge level is appropriate';
+            formula = `Funding Size ($${(stockValue + deepITMCallValue).toFixed(2)}) / (QQQ Price ($${qqqPrice.toFixed(2)}) × 100) = ${hedgeCount.toFixed(1)} contracts required`;
         }
         res.json({
             positions: positionsWithDelta,
@@ -118,15 +122,13 @@ app.get('/api/accounts/:accountNumber/details', async (req, res) => {
                 fundingSize: stockValue + deepITMCallValue,
                 qqqPrice,
                 hedgeRatio: hedgeCount,
-                currentHedgeCount: currentHedgeCount,
-                coverageRatio: coverageRatio,
+                currentHedgeCount,
+                coverageRatio,
                 status: hedgeStatus,
                 recommendation,
+                formula,
                 estimatedCost: hedgeCount * 8.5 * 100
             },
-            calculationDetails,
-            hedgeRecommendations: recommendations,
-            qqqPrice,
             portfolioStats: { stockCount: stockPositions.length, optionCount: positions.length - stockPositions.length, totalValue: stockValue + deepITMCallValue },
         });
     }
