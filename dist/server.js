@@ -73,7 +73,6 @@ app.get('/api/accounts/:accountNumber/details', async (req, res) => {
                 const lastPart = parts[parts.length - 1];
                 const strike = lastPart ? parseFloat(lastPart.slice(-7)) / 1000 : 0;
                 const quantity = parseFloat(p['quantity'] || '0');
-                // Value = quantity × 100 × delta × stock_price
                 const value = quantity * 100 * 0.95 * qqqPrice;
                 return {
                     symbol,
@@ -86,6 +85,26 @@ app.get('/api/accounts/:accountNumber/details', async (req, res) => {
             qqqPrice,
             deepITMThreshold: qqqPrice * 0.9
         };
+        // Calculate current QQQ Put hedge positions
+        const currentHedgePositions = positions.filter((p) => p['instrument-type'] === 'Equity Option' &&
+            p['underlying-symbol'] === 'QQQ' &&
+            p['streamer-symbol']?.includes('P'));
+        const currentHedgeCount = currentHedgePositions.reduce((sum, p) => sum + parseFloat(p['quantity'] || '0'), 0);
+        const coverageRatio = currentHedgeCount / hedgeCount;
+        let hedgeStatus = 'adequatelyhedged';
+        let recommendation = '';
+        if (coverageRatio < 0.8) {
+            hedgeStatus = 'underhedged';
+            recommendation = `QQQ PUT 옵션을 ${Math.ceil(hedgeCount - currentHedgeCount)}개 더 구매하세요`;
+        }
+        else if (coverageRatio > 1.2) {
+            hedgeStatus = 'overhedged';
+            recommendation = `QQQ PUT 옵션을 ${Math.ceil(currentHedgeCount - hedgeCount)}개 매도하여 조정하세요`;
+        }
+        else {
+            hedgeStatus = 'adequatelyhedged';
+            recommendation = '현재 헤징 수준이 적절합니다';
+        }
         res.json({
             positions: positionsWithDelta,
             fundingSize: stockValue + deepITMCallValue,
@@ -94,6 +113,16 @@ app.get('/api/accounts/:accountNumber/details', async (req, res) => {
                 deepITMCallValue,
                 totalValue: stockValue + deepITMCallValue,
                 description: `Stock positions + Deep ITM Call options (quantity × stock price + deep ITM calls × 100 × delta × QQQ price ($${qqqPrice.toFixed(2)}))`
+            },
+            hedgeAnalysis: {
+                fundingSize: stockValue + deepITMCallValue,
+                qqqPrice,
+                hedgeRatio: hedgeCount,
+                currentHedgeCount: currentHedgeCount,
+                coverageRatio: coverageRatio,
+                status: hedgeStatus,
+                recommendation,
+                estimatedCost: hedgeCount * 8.5 * 100
             },
             calculationDetails,
             hedgeRecommendations: recommendations,

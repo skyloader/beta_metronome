@@ -75,6 +75,7 @@ function App() {
   const [error, setError] = useState<string | null>(null);
   const [initialized, setInitialized] = useState(false);
   const [fundingBreakdown, setFundingBreakdown] = useState<{ stockValue: number; deepITMCallValue: number; totalValue: number; description: string } | null>(null);
+  const [hedgeAnalysis, setHedgeAnalysis] = useState<{ fundingSize: number; qqqPrice: number; hedgeRatio: number; currentHedgeCount: number; coverageRatio: number; status: string; recommendation: string; estimatedCost: number } | null>(null);
   const [calculationDetails, setCalculationDetails] = useState<{ stockPositions: any[]; deepITMCalls: any[]; qqqPrice: number; deepITMThreshold: number } | null>(null);
 
   // Default account number
@@ -122,9 +123,9 @@ function App() {
       setPositions(data.positions || []);
       setFundingSize(data.fundingSize || 0);
       setHedgeRecommendations(data.hedgeRecommendations || []);
-      setQqqPrice(data.qqqPrice || 395.50);
-      setFundingBreakdown(data.fundingBreakdown || null);
+      setHedgeAnalysis(data.hedgeAnalysis || null);
       setCalculationDetails(data.calculationDetails || null);
+      setFundingBreakdown(data.fundingBreakdown || null);
     } catch (err: unknown) {
       setError(err instanceof Error ? err.message : 'Failed to load account details');
     } finally {
@@ -359,6 +360,50 @@ function App() {
                   <div className="mt-3 pt-2 border-t border-gray-300 flex justify-between items-center">
                     <p className="text-sm font-semibold text-gray-900">Total Funding Size:</p>
                     <p className="text-lg font-bold text-primary-700">{fundingBreakdown ? formatCurrency(fundingBreakdown.totalValue) : '0'}</p>
+                  </div>
+                </div>
+              )}
+              {/* Hedge Analysis */}
+              {hedgeAnalysis && (
+                <div className="bg-white rounded-xl shadow-lg overflow-hidden mb-6">
+                  <div className="px-6 py-4 bg-gradient-to-r from-gray-50 to-gray-100 border-b border-gray-200">
+                    <h3 className="text-lg font-bold text-gray-900">QQQ Put Option Hedge Recommendations</h3>
+                  </div>
+                  <div className="p-6">
+                    <div className="grid grid-cols-2 gap-6 mb-4">
+                      <div>
+                        <p className="text-sm text-gray-600">Funding Size</p>
+                        <p className="text-xl font-bold text-gray-900">{formatCurrency(hedgeAnalysis.fundingSize)}</p>
+                      </div>
+                      <div>
+                        <p className="text-sm text-gray-600">QQQ Price</p>
+                        <p className="text-xl font-bold text-gray-900">${hedgeAnalysis.qqqPrice.toFixed(2)}</p>
+                      </div>
+                      <div>
+                        <p className="text-sm text-gray-600">Hedge Ratio</p>
+                        <p className="text-xl font-bold text-gray-900">{hedgeAnalysis.hedgeRatio} contracts</p>
+                      </div>
+                      <div>
+                        <p className="text-sm text-gray-600">Current Hedge</p>
+                        <p className="text-xl font-bold text-gray-900">{hedgeAnalysis.currentHedgeCount} contracts</p>
+                      </div>
+                    </div>
+                    <div className={`p-4 rounded-lg mb-4 ${
+                      hedgeAnalysis.status === 'underhedged' ? 'bg-red-50 border-l-4 border-red-500' :
+                      hedgeAnalysis.status === 'overhedged' ? 'bg-yellow-50 border-l-4 border-yellow-500' :
+                      'bg-green-50 border-l-4 border-green-500'
+                    }`}>
+                      <p className="text-sm font-semibold text-gray-700 mb-1">Status: {
+                        hedgeAnalysis.status === 'underhedged' ? 'UNDERHEDED - 헤징 부족' :
+                        hedgeAnalysis.status === 'overhedged' ? 'OVERHEDED - 헤징 초과' :
+                        'ADEQUATELY HEDGED - 적절한 헤징'
+                      }</p>
+                      <p className="text-gray-900">{hedgeAnalysis.recommendation}</p>
+                    </div>
+                    <div className="bg-gray-50 rounded-lg p-4">
+                      <p className="text-sm text-gray-600 mb-2">Estimated Protection Cost</p>
+                      <p className="text-lg font-bold text-gray-900">{formatCurrency(hedgeAnalysis.estimatedCost)}</p>
+                    </div>
                   </div>
                 </div>
               )}
