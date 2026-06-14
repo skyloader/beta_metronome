@@ -337,7 +337,7 @@ function App() {
                           <div className="flex justify-between">
                             <span className="text-gray-700">{call.symbol}</span>
                             <span className="text-gray-900 font-mono">
-                              {call.quantity} × 100 × 0.95 = <strong>{formatCurrency(call.value)}</strong>
+                              {call.quantity} × 100 × 0.95 × ${calculationDetails.qqqPrice.toFixed(2)} = <strong>{formatCurrency(call.value)}</strong>
                             </span>
                           </div>
                           <div className="text-xs text-gray-500 mt-1">
