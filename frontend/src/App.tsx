@@ -300,6 +300,52 @@ function App() {
                   </div>
                 </div>
               )}
+              {/* QQQ Put Hedge - Important Section */}
+              {hedgeAnalysis && (
+                <div className="mt-6 bg-gradient-to-r from-indigo-50 to-purple-50 rounded-xl shadow-lg overflow-hidden">
+                  <div className="px-6 py-4 border-b border-indigo-200">
+                    <h3 className="text-lg font-bold text-indigo-900">QQQ Put Hedge Status</h3>
+                  </div>
+                  <div className="p-6">
+                    <div className="grid grid-cols-2 gap-6 mb-4">
+                      <div className="bg-white rounded-lg p-3">
+                        <p className="text-xs text-gray-500 uppercase mb-1">Funding Size</p>
+                        <p className="text-2xl font-bold text-gray-900">{formatCurrency(hedgeAnalysis.fundingSize)}</p>
+                      </div>
+                      <div className="bg-white rounded-lg p-3">
+                        <p className="text-xs text-gray-500 uppercase mb-1">QQQ Price</p>
+                        <p className="text-2xl font-bold text-gray-900">${hedgeAnalysis.qqqPrice.toFixed(2)}</p>
+                      </div>
+                    </div>
+                    <div className="grid grid-cols-2 gap-6 mb-4">
+                      <div>
+                        <p className="text-sm text-gray-600 mb-1">Current Hedge</p>
+                        <p className="text-3xl font-bold text-gray-900">{hedgeAnalysis.currentHedgeCount} contracts</p>
+                        <p className="text-xs text-gray-500">Long QQQ PUT options</p>
+                      </div>
+                      <div>
+                        <p className="text-sm text-gray-600 mb-1">Coverage</p>
+                        <p className={`text-3xl font-bold ${hedgeAnalysis.status === 'underhedged' ? 'text-red-600' : hedgeAnalysis.status === 'overhedged' ? 'text-yellow-600' : 'text-green-600'}`}>
+                          {hedgeAnalysis.coverageRatio.toFixed(1)}%
+                        </p>
+                        <p className="text-xs text-gray-500">of funding size</p>
+                      </div>
+                    </div>
+                    <div className={`p-4 rounded-lg mb-3 ${
+                      hedgeAnalysis.status === 'underhedged' ? 'bg-red-100 border-l-4 border-red-500' :
+                      hedgeAnalysis.status === 'overhedged' ? 'bg-yellow-100 border-l-4 border-yellow-500' :
+                      'bg-green-100 border-l-4 border-green-500'
+                    }`}>
+                      <p className="text-sm font-bold text-gray-700 mb-1">Status: {hedgeAnalysis.status.toUpperCase().replace('ADEQUATELYHEDED', 'ADEQUATELY HEDGED')}</p>
+                      <p className="text-gray-900 font-medium">{hedgeAnalysis.recommendation}</p>
+                    </div>
+                    <div className="bg-white rounded-lg p-3">
+                      <p className="text-xs text-gray-500 mb-1">Formula: (PUT Qty × 100 × QQQ Price) / Funding Size</p>
+                      <p className="text-xs font-mono text-gray-700">{hedgeAnalysis.formula}</p>
+                    </div>
+                  </div>
+                </div>
+              )}
               
               {/* Detailed Calculation */}
               {calculationDetails && (
