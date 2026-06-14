@@ -1,0 +1,1 @@
+{"version":3,"file":"risk-parameters-service.d.ts","sourceRoot":"","sources":["../../lib/services/risk-parameters-service.ts"],"names":[],"mappings":"AACA,OAAO,oBAAoB,MAAM,6BAA6B,CAAC;AAE/D,MAAM,CAAC,OAAO,OAAO,qBAAqB;IAC1B,OAAO,CAAC,UAAU;gBAAV,UAAU,EAAE,oBAAoB;IAI9C,8BAA8B,CAAC,aAAa,EAAE,MAAM,EAAE,gBAAgB,EAAE,MAAM;IAK9E,gBAAgB,CAAC,aAAa,EAAE,MAAM;CAK/C"}

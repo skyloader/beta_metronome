@@ -1,0 +1,34 @@
+{
+  "name": "beta_metronome",
+  "version": "1.0.0",
+  "description": "",
+  "main": "dist/index.js",
+  "scripts": {
+    "build": "tsc && npm run build:frontend",
+    "build:frontend": "cd frontend && npm run build",
+    "start": "node dist/index.js",
+    "start:server": "node dist/server.js",
+    "dev": "ts-node -P tsconfig.node.json src/index.ts",
+    "dev:server": "ts-node -P tsconfig.node.json src/server.ts",
+    "dev:server:watch": "ts-node -P tsconfig.node.json --watch src/server.ts",
+    "start:all": "concurrently \"npm run dev:server\" \"cd frontend && npm run dev\"",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "@tastytrade/api": "^7.0.2",
+    "@types/cors": "^2.8.19",
+    "@types/express": "^5.0.6",
+    "@types/node": "^25.9.3",
+    "axios": "^1.17.0",
+    "cors": "^2.8.6",
+    "express": "^5.2.1",
+    "ts-node": "^10.9.2",
+    "typescript": "^6.0.3"
+  },
+  "devDependencies": {
+    "concurrently": "^10.0.3"
+  }
+}

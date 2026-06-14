@@ -1,0 +1,1 @@
+{"version":3,"file":"margin-requirements-service.d.ts","sourceRoot":"","sources":["../../lib/services/margin-requirements-service.ts"],"names":[],"mappings":"AACA,OAAO,oBAAoB,MAAM,6BAA6B,CAAC;AAE/D,MAAM,CAAC,OAAO,OAAO,yBAAyB;IAC9B,OAAO,CAAC,UAAU;gBAAV,UAAU,EAAE,oBAAoB;IAI9C,qBAAqB,CAAC,aAAa,EAAE,MAAM;IAK3C,sBAAsB,CAAC,aAAa,EAAE,MAAM,EAAE,KAAK,EAAE,MAAM;CAKpE"}
