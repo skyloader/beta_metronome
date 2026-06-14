@@ -1,7 +1,8 @@
 # Session State - Beta Metronome
 
 **Date:** 2026-06-14  
-**Project:** Tastytrade Portfolio Monitoring & QQQ Put Hedging Dashboard
+**Git Commit:** 321f650  
+**Branch:** master
 
 ---
 
@@ -17,7 +18,7 @@ Build a dashboard to:
 
 **Funding Size Formula:**
 ```
-Funding Size = Σ[stock_qty × stock_price] + Σ[deep_itm_call_qty × 100 × delta]
+Funding Size = Σ[stock_qty × stock_price] + Σ[deep_itm_call_qty × 100 × delta × stock_price]
 ```
 
 Where:
@@ -26,103 +27,52 @@ Where:
 
 ---
 
-## Execution Results (as of 2026-06-14)
+## Git Repository Setup
 
-**Running the application:**
+**Repository:** `~/workspace/pi_workspace/beta_metronome`
+
+**Git Commands:**
 ```bash
 cd ~/workspace/pi_workspace/beta_metronome
-npm run start:all
-# or individually:
-npm run dev:server      # Backend on port 3001
-npm run dev             # Frontend on port 5173
-```
-
-**Test results for account 5WX57665:**
-
-| Component | Calculation | Value |
-|-----------|-------------|-------|
-| GOOGL | 65 × $359.68 | $23,379.20 |
-| AAPL | 122 × $291.13 | $35,517.86 |
-| **Stock Total** | | **$58,897.06** |
-| QQQ   260618C00610000 | 8 × 100 × 0.95 | $760.00 |
-| **Total Funding Size** | | **$59,657.06** |
-
-**Verification:**
-- QQQ price from strike: $743.00
-- Deep ITM threshold: $743 × 0.9 = $668.70
-- QQQ   260618C00610000 strike: $610 < $668.70 → IS Deep ITM ✓
-- Other QQQ options have strikes > $668.70 → NOT Deep ITM ✓
-
----
-
-## Architecture
-
-```
-beta_metronome/
-├── src/
-│   ├── client.ts         # Tastytrade API client with OAuth
-│   ├── positions.ts      # Position retrieval (getPositionsList)
-│   ├── funding.ts        # Funding size calculation logic
-│   ├── hedge.ts          # QQQ Put hedge ratio recommendations
-│   ├── server.ts         # Express backend (port 3001)
-│   └── index.ts          # CLI entry point
-├── frontend/
-│   └── src/
-│       ├── App.tsx       # Main React dashboard
-│       ├── main.tsx
-│       └── index.css     # Tailwind CSS
-├── token.info            # API credentials (gitignored)
-├── package.json
-└── tsconfig.json
+git status
+git log --oneline -3
+git diff HEAD~1 HEAD
 ```
 
 ---
 
-## Key Files
+## Recent Changes (Current Session)
 
-### src/server.ts
-- `GET /api/accounts` - List all accounts with metadata
-- `GET /api/accounts/:accountNumber/details` - Full account details with positions, funding, hedge recommendations
-- Calculates `stockValue` using `close-price` from positions
-- Calculates `deepITMCallValue` using strike-based threshold
+### 1. Deep ITM Call Calculation Fix
+- **Issue:** Deep ITM Call value was missing QQQ stock price multiplication
+- **Fix:** Updated `calculateDeepITMCallValue()` to use `quantity × 100 × 0.95 × stockPrice`
+- **Result:** Deep ITM Call now correctly calculates as 8 × 100 × 0.95 × $743 = $564,680
 
-### src/funding.ts
-- `isDeepITMCall(option, stockPrice)` - Check if option is Deep ITM Call
-- `calculateDeepITMCallValue(option, _stockPrice)` - qty × 100 × 0.95
-- `getLiveStockPrices(client, positions)` - Extract stock prices from positions
-- `getQQQPriceFromPositions(positions)` - Extract QQQ price from option strikes
+### 2. API Enhancement
+- Added `calculationDetails` to `/api/accounts/:accountNumber/details` response
+- Includes:
+  - `stockPositions`: Array with symbol, quantity, closePrice, value
+  - `deepITMCalls`: Array with symbol, strike, quantity, delta, value
+  - `qqqPrice`: Current QQQ price from option strike
+  - `deepITMThreshold`: Calculated threshold (QQQ × 0.9)
 
-### src/client.ts
-- `createTastytradeClient()` - Initialize Tastytrade OAuth client
-- `getCustomerAccounts()` - Fetch all customer accounts
-- `getQuote()` - Placeholder (Tastytrade API v7 doesn't have direct quote endpoint)
+### 3. UI Update
+- Added "Calculation Details" section in frontend
+- Shows individual stock calculations
+- Shows Deep ITM call calculations with strike/threshold comparison
+- Updated description to include QQQ price
 
 ---
 
-## Current Status
+## Key Files Modified (Current Session)
 
-**Backend:**
-- ✅ Tastytrade client initialization with OAuth
-- ✅ Account listing endpoint
-- ✅ Position retrieval via `getPositionsList`
-- ✅ Funding size calculation using `close-price` from positions
-- ✅ Deep ITM Call detection with 10% OTM threshold
-- ✅ Express server running on port 3001
-
-**Frontend:**
-- ✅ React dashboard with Tailwind CSS
-- ✅ Account selector dropdown
-- ✅ Account summary display with funding size
-- ✅ Positions table with delta
-- ✅ Hedge recommendations section
-- ✅ Auto-refresh QQQ price every 5 seconds
-
-**Issues Fixed:**
-- Fixed `marketMakerQuotesService` not found error
-- Fixed missing `getClient()` function
-- Fixed duplicate variable declarations
-- Fixed `stockValue` calculation to use `close-price` from positions directly
-- Zombie process issue causing stale code to run
+| File | Change |
+|------|--------|
+| `src/funding.ts` | Fixed `calculateDeepITMCallValue()` to multiply by `stockPrice` |
+| `src/server.ts` | Added `calculationDetails` to API response with QQQ price in description |
+| `frontend/src/App.tsx` | Added `calculationDetails` state and UI component |
+| `SESSION_STATE.md` | Updated with new calculations |
+| `FUNDING_SIZE_CALCULATION.md` | Updated with correct formula |
 
 ---
 
@@ -132,23 +82,39 @@ beta_metronome/
 # Development (server + frontend)
 npm run start:all
 
-# Individual servers
+# Or individually
 npm run dev:server      # Backend on port 3001
 npm run dev             # Frontend on port 5173
-
-# Build
-npm run build
-npm start               # Production server
 ```
-
-**Ports:**
-- Backend: 3001
-- Frontend: 5173
 
 ---
 
-## Next Steps
+## Verification
 
-1. Deploy and validate end-to-end
-2. Add unit tests if needed
-3. Update `FUNDING_SIZE_CALCULATION.md` with verified calculations
+For account 5WX57665:
+- **Stock Positions:** 2 (GOOGL, AAPL) → $58,897.06
+- **Deep ITM Calls:** 1 (QQQ 260618C00610000) → $564,680.00
+- **Total Funding Size:** $623,577.06
+
+**API Response:**
+```
+description: "Stock positions + Deep ITM Call options (quantity × stock price + deep ITM calls × 100 × delta × QQQ price ($743.00))"
+```
+
+---
+
+## Git Commands for Next Session
+
+```bash
+cd ~/workspace/pi_workspace/beta_metronome
+
+# Check current state
+git status
+git log --oneline -5
+
+# View recent changes
+git diff HEAD~1 HEAD
+
+# Start development servers
+npm run start:all
+```
