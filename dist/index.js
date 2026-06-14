@@ -37,7 +37,7 @@ async function main() {
                 // Calculate QQQ Put hedge
                 // Calculate QQQ Put hedge
                 console.log('\n--- QQQ Put Hedge Recommendation ---');
-                const qqqPrice = (0, funding_1.getQQQPriceFromPositions)(positions);
+                const qqqPrice = await (0, funding_1.getQQQPriceFromPositions)(null, positions);
                 const hedgeCount = await (0, hedge_1.calculateHedge)(client, '5WX57665', qqqPrice);
                 console.log(`Recommended QQQ Put Options: ${hedgeCount}`);
                 const recommendations = await (0, hedge_1.recommendHedgeOptions)(client, '5WX57665', qqqPrice);

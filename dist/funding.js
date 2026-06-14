@@ -114,9 +114,23 @@ async function getLiveStockPrices(client, positions) {
     }
     return prices;
 }
-// Get QQQ price from positions (using QQQ option close prices)
-function getQQQPriceFromPositions(positions) {
-    // Find QQQ option and extract price from symbol
+// Get QQQ price from Yahoo Finance or positions (using QQQ option close prices)
+async function getQQQPriceFromPositions(client, positions) {
+    // First, try to get real-time price from Yahoo Finance
+    try {
+        const response = await fetch('https://query1.finance.yahoo.com/v8/finance/chart/QQQ');
+        if (response.ok) {
+            const data = await response.json();
+            const price = data.chart?.result?.[0]?.meta?.regularMarketPrice;
+            if (price && typeof price === 'number') {
+                return price;
+            }
+        }
+    }
+    catch (error) {
+        console.error('Error fetching QQQ price:', error);
+    }
+    // Fallback to strike price from positions
     for (const pos of positions) {
         if (pos.symbol.includes('QQQ') && pos['instrument-type'] === 'Equity Option') {
             const strike = parseStrike(pos.symbol);

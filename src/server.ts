@@ -38,7 +38,7 @@ app.get('/api/accounts/:accountNumber/details', async (req: Request, res: Respon
     const client = getClient();
     
     const positions = await getCurrentPositions(client, accountNumber as string);
-    const qqqPrice = getQQQPriceFromPositions(positions);
+    const qqqPrice = await getQQQPriceFromPositions(null, positions);
     
     const positionsWithDelta = positions.map((pos: any) => ({
       ...pos,
@@ -51,6 +51,7 @@ app.get('/api/accounts/:accountNumber/details', async (req: Request, res: Respon
     
     // Calculate stock value using close-price from positions
     const stockPositions = positions.filter((p: any) => p['instrument-type'] === 'Equity');
+    
     const stockValue = stockPositions.reduce((sum: number, stock: any) => {
       const quantity = parseFloat(stock['quantity'] || '0');
       const closePrice = parseFloat(stock['close-price'] || '0');

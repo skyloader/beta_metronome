@@ -17,7 +17,7 @@ export declare function calculateStockPositionValue(position: Position, stockPri
 export declare function calculateDeepITMCallValue(option: Position, stockPrice: number): number;
 export declare function calculateFundingSize(client: TastytradeClient, accountNumber: string, stockPriceMap: Record<string, number>): Promise<number>;
 export declare function getLiveStockPrices(client: TastytradeClient, positions: Position[]): Promise<Record<string, number>>;
-export declare function getQQQPriceFromPositions(positions: Position[]): number;
+export declare function getQQQPriceFromPositions(client: TastytradeClient | null, positions: Position[]): Promise<number>;
 declare const _default: {
     getStockPositions: typeof getStockPositions;
     getOptionPositions: typeof getOptionPositions;

@@ -71,12 +71,20 @@ export async function testConnection(client: any): Promise<boolean> {
     return false;
   }
 }
-// Get real-time quote for a symbol
-// Since Tastytrade API v7 doesn't have direct quote endpoint,
-// we use the positions' close-price as fallback or fetch from external source
+// Get real-time quote for a symbol using Yahoo Finance
 export async function getQuote(client: any, symbol: string): Promise<number | null> {
-  // For now, return null - prices will come from positions data
-  return null;
+  try {
+    const response = await fetch(`https://query1.finance.yahoo.com/v8/finance/chart/${symbol}`);
+    if (response.ok) {
+      const data = await response.json();
+      const price = data.chart?.result?.[0]?.meta?.regularMarketPrice;
+      return price && typeof price === 'number' ? price : null;
+    }
+    return null;
+  } catch (error) {
+    console.error(`Error getting quote for ${symbol}:`, error);
+    return null;
+  }
 }
 
 export default {

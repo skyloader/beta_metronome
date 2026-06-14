@@ -38,7 +38,7 @@ app.get('/api/accounts/:accountNumber/details', async (req, res) => {
         const { accountNumber } = req.params;
         const client = getClient();
         const positions = await (0, positions_1.getCurrentPositions)(client, accountNumber);
-        const qqqPrice = (0, funding_1.getQQQPriceFromPositions)(positions);
+        const qqqPrice = await (0, funding_1.getQQQPriceFromPositions)(null, positions);
         const positionsWithDelta = positions.map((pos) => ({
             ...pos,
             delta: pos['instrument-type'] === 'Equity' ? 1.0 :
