@@ -363,50 +363,6 @@ function App() {
                   </div>
                 </div>
               )}
-              {/* Hedge Analysis */}
-              {hedgeAnalysis && (
-                <div className="bg-white rounded-xl shadow-lg overflow-hidden mb-6">
-                  <div className="px-6 py-4 bg-gradient-to-r from-gray-50 to-gray-100 border-b border-gray-200">
-                    <h3 className="text-lg font-bold text-gray-900">QQQ Put Option Hedge Recommendations</h3>
-                  </div>
-                  <div className="p-6">
-                    <div className="grid grid-cols-2 gap-6 mb-4">
-                      <div>
-                        <p className="text-sm text-gray-600">Funding Size</p>
-                        <p className="text-xl font-bold text-gray-900">{formatCurrency(hedgeAnalysis.fundingSize)}</p>
-                      </div>
-                      <div>
-                        <p className="text-sm text-gray-600">QQQ Price</p>
-                        <p className="text-xl font-bold text-gray-900">${hedgeAnalysis.qqqPrice.toFixed(2)}</p>
-                      </div>
-                      <div>
-                        <p className="text-sm text-gray-600">Hedge Ratio</p>
-                        <p className="text-xl font-bold text-gray-900">{hedgeAnalysis.hedgeRatio} contracts</p>
-                      </div>
-                      <div>
-                        <p className="text-sm text-gray-600">Current Hedge</p>
-                        <p className="text-xl font-bold text-gray-900">{hedgeAnalysis.currentHedgeCount} contracts</p>
-                      </div>
-                    </div>
-                    <div className={`p-4 rounded-lg mb-4 ${
-                      hedgeAnalysis.status === 'underhedged' ? 'bg-red-50 border-l-4 border-red-500' :
-                      hedgeAnalysis.status === 'overhedged' ? 'bg-yellow-50 border-l-4 border-yellow-500' :
-                      'bg-green-50 border-l-4 border-green-500'
-                    }`}>
-                      <p className="text-sm font-semibold text-gray-700 mb-1">Status: {
-                        hedgeAnalysis.status === 'underhedged' ? 'UNDERHEDED - 헤징 부족' :
-                        hedgeAnalysis.status === 'overhedged' ? 'OVERHEDED - 헤징 초과' :
-                        'ADEQUATELY HEDGED - 적절한 헤징'
-                      }</p>
-                      <p className="text-gray-900">{hedgeAnalysis.recommendation}</p>
-                    </div>
-                    <div className="bg-gray-50 rounded-lg p-4">
-                      <p className="text-sm text-gray-600 mb-2">Estimated Protection Cost</p>
-                      <p className="text-lg font-bold text-gray-900">{formatCurrency(hedgeAnalysis.estimatedCost)}</p>
-                    </div>
-                  </div>
-                </div>
-              )}
             </div>
 
             {/* Position Stats */}
@@ -425,10 +381,25 @@ function App() {
               </div>
               <div className="bg-white rounded-xl shadow-md p-6 border-b-4 border-primary-600">
                 <p className="text-sm font-medium text-gray-500 uppercase tracking-wider mb-2">QQQ Put Hedge</p>
-                <p className="text-3xl font-bold text-primary-700">
-                  {hedgeRecommendations.reduce((acc, r) => acc + r.recommendedQuantity, 0)} 
-                  <span className="text-sm text-gray-500 ml-1">contracts</span>
-                </p>
+                <div className="space-y-2">
+                  <div className="flex justify-between text-sm">
+                    <span className="text-gray-600">Status:</span>
+                    <span className="font-semibold text-gray-900">{hedgeAnalysis?.status === 'underhedged' ? 'Underhedged' : hedgeAnalysis?.status === 'overhedged' ? 'Overhedged' : 'Adequately Hedged'}</span>
+                  </div>
+                  <div className="flex justify-between text-sm">
+                    <span className="text-gray-600">Current:</span>
+                    <span className="font-semibold text-gray-900">{hedgeAnalysis?.currentHedgeCount || 0} contracts</span>
+                  </div>
+                  <div className="flex justify-between text-sm">
+                    <span className="text-gray-600">Recommended:</span>
+                    <span className="font-semibold text-gray-900">{hedgeAnalysis?.hedgeRatio || 0} contracts</span>
+                  </div>
+                  {hedgeAnalysis && hedgeAnalysis.recommendation && (
+                    <p className="text-xs text-gray-600 mt-2">
+                      {hedgeAnalysis.recommendation}
+                    </p>
+                  )}
+                </div>
               </div>
             </div>
 

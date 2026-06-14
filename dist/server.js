@@ -95,15 +95,15 @@ app.get('/api/accounts/:accountNumber/details', async (req, res) => {
         let recommendation = '';
         if (coverageRatio < 0.8) {
             hedgeStatus = 'underhedged';
-            recommendation = `QQQ PUT 옵션을 ${Math.ceil(hedgeCount - currentHedgeCount)}개 더 구매하세요`;
+            recommendation = `Buy ${Math.ceil(hedgeCount - currentHedgeCount)} more QQQ PUT options`;
         }
         else if (coverageRatio > 1.2) {
             hedgeStatus = 'overhedged';
-            recommendation = `QQQ PUT 옵션을 ${Math.ceil(currentHedgeCount - hedgeCount)}개 매도하여 조정하세요`;
+            recommendation = `Sell ${Math.ceil(currentHedgeCount - hedgeCount)} QQQ PUT options to adjust`;
         }
         else {
             hedgeStatus = 'adequatelyhedged';
-            recommendation = '현재 헤징 수준이 적절합니다';
+            recommendation = 'Current hedge level is appropriate';
         }
         res.json({
             positions: positionsWithDelta,
