@@ -3,7 +3,6 @@ import cors from 'cors';
 import { createTastytradeClient, getCustomerAccounts } from './client';
 import { getCurrentPositions } from './positions';
 import { calculateFundingSize, getStockPositions, getQQQPriceFromPositions, isDeepITMCall, calculateDeepITMCallValue } from './funding';
-import { calculateHedge, recommendHedgeOptions } from './hedge';
 
 const app = express();
 const PORT = process.env.PORT || 3001;
@@ -46,8 +45,6 @@ app.get('/api/accounts/:accountNumber/details', async (req: Request, res: Respon
              pos['instrument-type'] === 'Equity Option' ? 0.5 : 0
     }));
     
-    const recommendations = await recommendHedgeOptions(client, accountNumber as string, qqqPrice);
-    
     // Calculate stock value using close-price from positions
     const stockPositions = positions.filter((p: any) => p['instrument-type'] === 'Equity');
     
@@ -68,30 +65,12 @@ app.get('/api/accounts/:accountNumber/details', async (req: Request, res: Respon
     
     const fundingSize = stockValue + deepITMCallValue;
     
-    // Get PUT options with Long direction
-    const longPutOptions = positions.filter((p: any) => 
-      p['instrument-type'] === 'Equity Option' && 
-      p['underlying-symbol'] === 'QQQ' &&
-      p['streamer-symbol']?.includes('P') &&
-      p['quantity-direction'] === 'Long'
-    );
-    
-    const putLongCount = longPutOptions.reduce((sum: number, p: any) => 
-      sum + parseFloat(p['quantity'] || '0'), 0);
-    
-    // Coverage = (PUT Long Count × 100 × QQQ Price) / Funding Size
-    // A coverage ratio > 1 means adequate protection
-    const currentHedgePercent = fundingSize > 0 ? (putLongCount * 100 * qqqPrice) / fundingSize * 100 : 0;
-    
-    // Calculate hedge ratio = number of PUT contracts needed for full coverage
-    const hedgeRatio = Math.ceil(fundingSize / (qqqPrice * 100));
-    
-    // Build detailed calculation breakdown
-    const calculationDetails = {
+    // Calculate detailed funding size breakdown
+    const fundingSizeCalculation = {
       stockPositions: stockPositions.map((p: any) => ({
         symbol: p['symbol'],
         quantity: parseFloat(p['quantity'] || '0'),
-        closePrice: parseFloat(p['close-price'] || '0'),
+        price: parseFloat(p['close-price'] || '0'),
         value: parseFloat(p['quantity'] || '0') * parseFloat(p['close-price'] || '0')
       })),
       deepITMCalls: deepITMCallPositions.map((p: any) => {
@@ -109,9 +88,27 @@ app.get('/api/accounts/:accountNumber/details', async (req: Request, res: Respon
           value
         };
       }),
-      qqqPrice,
-      deepITMThreshold: qqqPrice * 0.9
+      totalStockValue: stockValue,
+      totalDeepITMValue: deepITMCallValue,
+      formula: `Funding Size = Σ(stock_qty × stock_price) + Σ(deep_itm_call_qty × 100 × delta × QQQ_price)`
     };
+    
+    // Get PUT options with Long direction
+    const longPutOptions = positions.filter((p: any) => 
+      p['instrument-type'] === 'Equity Option' && 
+      p['underlying-symbol'] === 'QQQ' &&
+      p['streamer-symbol']?.includes('P') &&
+      p['quantity-direction'] === 'Long'
+    );
+    
+    const putLongCount = longPutOptions.reduce((sum: number, p: any) => 
+      sum + parseFloat(p['quantity'] || '0'), 0);
+    
+    // Coverage = (PUT Long Count × 100 × QQQ Price) / Funding Size
+    const currentHedgePercent = fundingSize > 0 ? (putLongCount * 100 * qqqPrice) / fundingSize * 100 : 0;
+    
+    // Hedge ratio = number of PUT contracts needed for full coverage
+    const hedgeRatio = Math.ceil(fundingSize / (qqqPrice * 100));
     
     // Calculate hedge status and recommendation
     let hedgeStatus: 'underhedged' | 'adequatelyhedged' | 'overhedged' = 'adequatelyhedged';
@@ -143,6 +140,7 @@ app.get('/api/accounts/:accountNumber/details', async (req: Request, res: Respon
         totalValue: stockValue + deepITMCallValue,
         description: `Stock positions + Deep ITM Call options (quantity × stock price + deep ITM calls × 100 × delta × QQQ price ($${qqqPrice.toFixed(2)}))`
       },
+      fundingSizeCalculation,
       hedgeAnalysis: {
         fundingSize,
         qqqPrice,
@@ -154,8 +152,6 @@ app.get('/api/accounts/:accountNumber/details', async (req: Request, res: Respon
         formula,
         estimatedCost: hedgeRatio * 8.5 * 100
       },
-      calculationDetails,
-      hedgeRecommendations: recommendations,
       qqqPrice,
       portfolioStats: { stockCount: stockPositions.length, optionCount: positions.length - stockPositions.length, totalValue: fundingSize },
     });
