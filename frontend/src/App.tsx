@@ -76,6 +76,29 @@ interface HedgeAnalysis {
   estimatedCost: number;
 }
 
+interface StockPositionCalc {
+  symbol: string;
+  quantity: number;
+  price: number;
+  value: number;
+}
+
+interface DeepITMCallCalc {
+  symbol: string;
+  strike: number;
+  quantity: number;
+  delta: number;
+  value: number;
+}
+
+interface FundingSizeCalculation {
+  stockPositions: StockPositionCalc[];
+  deepITMCalls: DeepITMCallCalc[];
+  totalStockValue: number;
+  totalDeepITMValue: number;
+  formula: string;
+}
+
 function App() {
   const [accounts, setAccounts] = useState<Account[]>([]);
   const [selectedAccount, setSelectedAccount] = useState<Account | null>(null);
@@ -84,6 +107,7 @@ function App() {
   const [hedgeRecommendations, setHedgeRecommendations] = useState<HedgeRecommendation[]>([]);
   const [qqqPrice, setQqqPrice] = useState<number>(395.50);
   const [hedgeAnalysis, setHedgeAnalysis] = useState<HedgeAnalysis | null>(null);
+  const [fundingSizeCalculation, setFundingSizeCalculation] = useState<FundingSizeCalculation | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [initialized, setInitialized] = useState(false);
@@ -134,6 +158,7 @@ function App() {
       setFundingSize(data.fundingSize || 0);
       setHedgeRecommendations(data.hedgeRecommendations || []);
       setHedgeAnalysis(data.hedgeAnalysis || null);
+      setFundingSizeCalculation(data.fundingSizeCalculation || null);
     } catch (err: unknown) {
       setError(err instanceof Error ? err.message : 'Failed to load account details');
     } finally {
@@ -288,7 +313,77 @@ function App() {
                 </div>
               </div>
               
-              {/* QQQ Put Hedge - Important Section - Moved Up */}
+              {/* Funding Size Calculation - Shows detailed breakdown */}
+              {fundingSizeCalculation && (
+                <div className="mt-6 pt-4 border-t border-gray-200">
+                  <h4 className="text-sm font-bold text-gray-900 mb-3">Funding Size Calculation</h4>
+                  
+                  {/* Formula */}
+                  <div className="bg-blue-50 rounded-lg p-3 mb-4">
+                    <p className="text-xs text-gray-600 mb-2 font-medium">Formula:</p>
+                    <p className="text-sm font-mono text-gray-800">{fundingSizeCalculation.formula}</p>
+                  </div>
+                  
+                  {/* Stock Positions */}
+                  <div className="mb-4">
+                    <p className="text-xs font-semibold text-gray-600 mb-2 uppercase">Stock Positions:</p>
+                    <div className="space-y-2">
+                      {fundingSizeCalculation.stockPositions.map((stock, idx) => (
+                        <div key={idx} className="flex justify-between text-sm bg-gray-50 rounded-lg p-2">
+                          <span className="text-gray-700">{stock.symbol}</span>
+                          <span className="text-gray-900 font-mono">
+                            {stock.quantity} × ${stock.price.toFixed(2)} = <strong>{formatCurrency(stock.value)}</strong>
+                          </span>
+                        </div>
+                      ))}
+                      {fundingSizeCalculation.stockPositions.length === 0 && (
+                        <p className="text-xs text-gray-500 italic">No stock positions</p>
+                      )}
+                    </div>
+                    <div className="mt-2 text-right">
+                      <p className="text-sm font-semibold text-gray-900">
+                        Stock Subtotal: {formatCurrency(fundingSizeCalculation.totalStockValue)}
+                      </p>
+                    </div>
+                  </div>
+                  
+                  {/* Deep ITM Calls */}
+                  <div className="mb-4">
+                    <p className="text-xs font-semibold text-gray-600 mb-2 uppercase">Deep ITM Call Options:</p>
+                    <div className="space-y-2">
+                      {fundingSizeCalculation.deepITMCalls.map((call, idx) => (
+                        <div key={idx} className="flex flex-col text-sm bg-gray-50 rounded-lg p-2">
+                          <div className="flex justify-between">
+                            <span className="text-gray-700">{call.symbol}</span>
+                            <span className="text-gray-900 font-mono">
+                              {call.quantity} × 100 × 0.95 × ${qqqPrice.toFixed(2)} = <strong>{formatCurrency(call.value)}</strong>
+                            </span>
+                          </div>
+                          <div className="text-xs text-gray-500 mt-1">
+                            Strike: ${call.strike.toFixed(2)} <span className="mx-1">|</span> QQQ: ${qqqPrice} <span className="mx-1">|</span> Deep ITM: Yes
+                          </div>
+                        </div>
+                      ))}
+                      {fundingSizeCalculation.deepITMCalls.length === 0 && (
+                        <p className="text-xs text-gray-500 italic">No Deep ITM calls found</p>
+                      )}
+                    </div>
+                    <div className="mt-2 text-right">
+                      <p className="text-sm font-semibold text-gray-900">
+                        Deep ITM Subtotal: {formatCurrency(fundingSizeCalculation.totalDeepITMValue)}
+                      </p>
+                    </div>
+                  </div>
+                  
+                  {/* Total */}
+                  <div className="pt-2 border-t border-gray-300 flex justify-between items-center">
+                    <p className="text-sm font-semibold text-gray-900">Total Funding Size:</p>
+                    <p className="text-lg font-bold text-primary-700">{formatCurrency(fundingSize)}</p>
+                  </div>
+                </div>
+              )}
+              
+              {/* QQQ Put Hedge - Important Section */}
               {hedgeAnalysis && (
                 <div className="mt-6 bg-gradient-to-r from-indigo-50 to-purple-50 rounded-xl shadow-lg overflow-hidden">
                   <div className="px-6 py-4 border-b border-indigo-200">
