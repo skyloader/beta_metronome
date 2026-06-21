@@ -1,0 +1,25 @@
+# Tastytrade API credentials
+token.info
+
+# Node modules
+node_modules/
+
+# Build outputs
+dist/
+frontend/dist/
+
+# Environment files
+.env
+.env.local
+
+# IDE
+.idea/
+.vscode/
+
+# Logs
+*.log
+npm-debug.log*
+
+# OS
+.DS_Store
+Thumbs.db

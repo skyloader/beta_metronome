@@ -35,6 +35,15 @@ cd beta_metronome
 # Install dependencies
 npm install
 
+# Create token.info first
+cat > token.info << EOF
+{
+  "token": "your_tastytrade_token",
+  "api-url": "https://api.tastytrade.com",
+  "websocket-url": "wss://streamer.tastytrade.com"
+}
+EOF
+
 # Run server
 node dist/server.js &
 
@@ -46,3 +55,9 @@ npm run dev
 
 - SSH: `git@github.com:skyloader/beta_metronome.git`
 - HTTPS: `https://github.com/skyloader/beta_metronome.git`
+
+## Important
+
+**DO NOT** commit `token.info` to git. It contains sensitive API credentials.
+
+The `.gitignore` file ensures `token.info` is never committed.
